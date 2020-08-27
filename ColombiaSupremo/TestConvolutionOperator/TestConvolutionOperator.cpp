@@ -1,4 +1,5 @@
 #include <ConvolutionOperator.hpp>
+#include <Session.hpp>
 #include <iostream>
 
 using namespace std;
@@ -19,31 +20,27 @@ int main(int argc, char **argv) {
     biasData.emplace_back(v);
   }
 
-  const uint32_t stride = 1;
-  const uint32_t padding = 1;
-
-  const auto convOp = make_shared<ConvolutionOperator>(
+  vector<shared_ptr<Operator>> operators;
+  operators.emplace_back(make_shared<ConvolutionOperator>(
       inputShape, outputShape,
       make_shared<WeightTensor>(weightData, weightShape),
-      make_shared<WeightTensor>(biasData, biasShape), stride, padding);
+      make_shared<WeightTensor>(biasData, biasShape), 1, 1));
 
-  auto uploadTensor = convOp->CreateNewUploadTensor();
   TensorRawData input;
-  for (float v = 1.f; v <= 25.f; ++v) {
+  input.reserve(25);
+  for (float v = 1.f; v <= 25.f; v += 1.f) {
     input.emplace_back(v);
   }
-  uploadTensor->ReadFromData(input);
-
-  auto readbackTensor = convOp->CreateNewReadbackTensor();
-
-  convOp->Run(uploadTensor, readbackTensor);
 
   TensorRawData output;
+  output.reserve(75);
   for (size_t i = 0; i < 75; ++i) {
     output.emplace_back(0.f);
   }
 
-  readbackTensor->WriteToData(output);
+  Session session(operators);
+
+  session.Run(input, output);
 
   for (size_t c = 0; c < 3; ++c) {
     constexpr static size_t HW = 25;
@@ -57,6 +54,5 @@ int main(int argc, char **argv) {
     }
     cout << endl;
   }
-
   return 0;
 }

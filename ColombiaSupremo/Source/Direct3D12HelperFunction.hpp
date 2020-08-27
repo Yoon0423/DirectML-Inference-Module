@@ -9,11 +9,17 @@
 
 namespace d3d12_helper {
 
-void InitializeDirect3D12(
-    winrt::com_ptr<ID3D12Device> &d3D12Device,
-    winrt::com_ptr<ID3D12CommandQueue> &commandQueue,
-    winrt::com_ptr<ID3D12CommandAllocator> &commandAllocator,
-    winrt::com_ptr<ID3D12GraphicsCommandList> &commandList);
+winrt::com_ptr<ID3D12Device> CreateDevice();
+
+winrt::com_ptr<ID3D12CommandQueue>
+CreateCommandQueue(winrt::com_ptr<ID3D12Device> device);
+
+winrt::com_ptr<ID3D12CommandAllocator>
+CreateCommandAllocator(winrt::com_ptr<ID3D12Device> device);
+
+winrt::com_ptr<ID3D12GraphicsCommandList>
+CreateCommandList(winrt::com_ptr<ID3D12Device> device,
+                  winrt::com_ptr<ID3D12CommandAllocator> commandAllocator);
 
 void CloseExecuteResetWait(
     winrt::com_ptr<ID3D12Device> d3D12Device,

@@ -141,11 +141,11 @@ std::shared_ptr<WeightTensor> ConvolutionOperator::getWeightTensor() {
 }
 
 void ConvolutionOperator::InitBindingTables() {
-  auto &deviceManager = DeviceManager::getInstance();
-
+  auto defaultDevice = DeviceManager::getInstance().GetDefault();
+  
   winrt::com_ptr<IDMLOperatorInitializer> operatorInitializer;
   IDMLCompiledOperator *dmlCompiledOperators[] = {mCompiledOperator.get()};
-  winrt::check_hresult(deviceManager.mDMLDevice->CreateOperatorInitializer(
+  winrt::check_hresult(defaultDevice->mDMLDevice->CreateOperatorInitializer(
       1, dmlCompiledOperators, __uuidof(operatorInitializer),
       operatorInitializer.put_void()));
 
@@ -157,7 +157,7 @@ void ConvolutionOperator::InitBindingTables() {
     descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     descriptorHeapDesc.NumDescriptors = descriptorCount;
     descriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-    winrt::check_hresult(deviceManager.mD3D12Device->CreateDescriptorHeap(
+    winrt::check_hresult(defaultDevice->mD3D12Device->CreateDescriptorHeap(
         &descriptorHeapDesc, _uuidof(mInitDescriptorHeap),
         mInitDescriptorHeap.put_void()));
   }
@@ -170,7 +170,7 @@ void ConvolutionOperator::InitBindingTables() {
     descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     descriptorHeapDesc.NumDescriptors = descriptorCount;
     descriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-    winrt::check_hresult(deviceManager.mD3D12Device->CreateDescriptorHeap(
+    winrt::check_hresult(defaultDevice->mD3D12Device->CreateDescriptorHeap(
         &descriptorHeapDesc, _uuidof(mExecDescriptorHeap),
         mExecDescriptorHeap.put_void()));
   }
@@ -183,7 +183,7 @@ void ConvolutionOperator::InitBindingTables() {
           bindingProp.PersistentResourceSize,
           D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
-      winrt::check_hresult(deviceManager.mD3D12Device->CreateCommittedResource(
+      winrt::check_hresult(defaultDevice->mD3D12Device->CreateCommittedResource(
           &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
           D3D12_HEAP_FLAG_NONE, &resourceDesc, D3D12_RESOURCE_STATE_COMMON,
           nullptr, __uuidof(mPersistentResource),
@@ -200,7 +200,7 @@ void ConvolutionOperator::InitBindingTables() {
     assert(bindingProps.PersistentResourceSize == 0);
 
     ID3D12DescriptorHeap *descriptorHeaps[] = {mInitDescriptorHeap.get()};
-    deviceManager.mCommandList->SetDescriptorHeaps(ARRAYSIZE(descriptorHeaps),
+    defaultDevice->mCommandList->SetDescriptorHeaps(ARRAYSIZE(descriptorHeaps),
                                                    descriptorHeaps);
 
     DML_BINDING_TABLE_DESC tableDesc = {
@@ -209,7 +209,7 @@ void ConvolutionOperator::InitBindingTables() {
         mInitDescriptorHeap->GetGPUDescriptorHandleForHeapStart(),
         bindingProps.RequiredDescriptorCount};
 
-    winrt::check_hresult(deviceManager.mDMLDevice->CreateBindingTable(
+    winrt::check_hresult(defaultDevice->mDMLDevice->CreateBindingTable(
         &tableDesc, __uuidof(mInitBindingTable), mInitBindingTable.put_void()));
 
     if (bindingProps.TemporaryResourceSize > 0) {
@@ -249,15 +249,15 @@ void ConvolutionOperator::InitBindingTables() {
     mInitBindingTable->BindOutputs(1, &convPersistentBinding);
   }
 
-  deviceManager.mCommandRecorder->RecordDispatch(
-      deviceManager.mCommandList.get(), operatorInitializer.get(),
+  defaultDevice->mCommandRecorder->RecordDispatch(
+      defaultDevice->mCommandList.get(), operatorInitializer.get(),
       mInitBindingTable.get());
 
   {
     auto bindingProps = mCompiledOperator->GetBindingProperties();
 
     ID3D12DescriptorHeap *descriptorHeaps[] = {mExecDescriptorHeap.get()};
-    deviceManager.mCommandList->SetDescriptorHeaps(ARRAYSIZE(descriptorHeaps),
+    defaultDevice->mCommandList->SetDescriptorHeaps(ARRAYSIZE(descriptorHeaps),
                                                    descriptorHeaps);
 
     DML_BINDING_TABLE_DESC tableDesc = {
@@ -266,13 +266,11 @@ void ConvolutionOperator::InitBindingTables() {
         mExecDescriptorHeap->GetGPUDescriptorHandleForHeapStart(),
         bindingProps.RequiredDescriptorCount};
 
-    winrt::check_hresult(deviceManager.mDMLDevice->CreateBindingTable(
+    winrt::check_hresult(defaultDevice->mDMLDevice->CreateBindingTable(
         &tableDesc, __uuidof(mExecBindingTable), mExecBindingTable.put_void()));
   }
 
-  d3d12_helper::CloseExecuteResetWait(
-      deviceManager.mD3D12Device, deviceManager.mCommandQueue,
-      deviceManager.mCommandAllocator, deviceManager.mCommandList);
+  defaultDevice->CloseExecuteResetWait();
 
   // can bind only once for exec binding table?
   DML_BUFFER_BINDING outputBufferBinding{mOutputTensor->getBufferPtr(), 0,

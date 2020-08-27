@@ -29,24 +29,29 @@ InOutTensor::InOutTensor(TensorShape shape) : Tensor(shape) {
       &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE,
       &CD3DX12_RESOURCE_DESC::Buffer(
           getTensorBufferSize(), D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
-      D3D12_RESOURCE_STATE_COPY_DEST, nullptr, __uuidof(mBuffer),
+      D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, __uuidof(mBuffer),
       mBuffer.put_void()));
+
+  mBuffer->SetName(L"InOutTensor");
 }
 
 WeightTensor::WeightTensor(const TensorRawData &weights, TensorShape shape)
     : Tensor(shape) {
-  auto &deviceManager = DeviceManager::getInstance();
+  auto defaultDevice = DeviceManager::getInstance().GetDefault();
 
   const auto tensorResourceDesc = CD3DX12_RESOURCE_DESC::Buffer(
       getTensorBufferSize(), D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
-  winrt::check_hresult(deviceManager.mD3D12Device->CreateCommittedResource(
+  winrt::check_hresult(defaultDevice->mD3D12Device->CreateCommittedResource(
       &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE,
       &tensorResourceDesc, D3D12_RESOURCE_STATE_COMMON, nullptr,
       __uuidof(mBuffer), mBuffer.put_void()));
 
+  //remove
+  mBuffer->SetName(L"WeightTensor");
+
   winrt::com_ptr<ID3D12Resource> uploadBuffer;
-  winrt::check_hresult(deviceManager.mD3D12Device->CreateCommittedResource(
+  winrt::check_hresult(defaultDevice->mD3D12Device->CreateCommittedResource(
       &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE,
       &CD3DX12_RESOURCE_DESC::Buffer(getTensorBufferSize()),
       D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, __uuidof(uploadBuffer),
@@ -59,11 +64,9 @@ WeightTensor::WeightTensor(const TensorRawData &weights, TensorShape shape)
          weights.size() * 4);
   uploadBuffer->Unmap(0, nullptr);
 
-  deviceManager.mCommandList->CopyResource(getBufferPtr(), uploadBuffer.get());
+  defaultDevice->mCommandList->CopyResource(getBufferPtr(), uploadBuffer.get());
 
-  d3d12_helper::CloseExecuteResetWait(
-      deviceManager.mD3D12Device, deviceManager.mCommandQueue,
-      deviceManager.mCommandAllocator, deviceManager.mCommandList);
+  defaultDevice->CloseExecuteResetWait();
 }
 
 UploadTensor::UploadTensor(TensorShape shape) : Tensor(shape) {
@@ -74,6 +77,8 @@ UploadTensor::UploadTensor(TensorShape shape) : Tensor(shape) {
       &CD3DX12_RESOURCE_DESC::Buffer(getTensorBufferSize()),
       D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, __uuidof(mBuffer),
       mBuffer.put_void()));
+
+  mBuffer->SetName(L"UploadTensor");
 }
 
 void UploadTensor::ReadFromData(const TensorRawData &data) {
@@ -93,6 +98,8 @@ ReadbackTensor::ReadbackTensor(TensorShape shape) : Tensor(shape) {
       &CD3DX12_RESOURCE_DESC::Buffer(getTensorBufferSize()),
       D3D12_RESOURCE_STATE_COPY_DEST, nullptr, __uuidof(mBuffer),
       mBuffer.put_void()));
+
+  mBuffer->SetName(L"ReadbackTensor");
 }
 
 void ReadbackTensor::WriteToData(TensorRawData &data) {

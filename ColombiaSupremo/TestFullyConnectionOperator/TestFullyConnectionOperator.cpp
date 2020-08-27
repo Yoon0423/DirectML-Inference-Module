@@ -1,11 +1,11 @@
 #include <FullyConnectionOperator.hpp>
+#include <Session.hpp>
 #include <iostream>
 
 using namespace std;
 using namespace colombia_supremo;
 
 int main(int argc, char **argv) {
-
   const uint32_t inputLength = 4;
   const uint32_t outputLength = 3;
   const auto weightShape = TensorShape({1, 1, inputLength, outputLength});
@@ -19,25 +19,21 @@ int main(int argc, char **argv) {
     }
   }
 
-  auto fcOp = make_shared<FullyConnectionOperator>(
+  vector<shared_ptr<Operator>> operators;
+  operators.emplace_back(make_shared<FullyConnectionOperator>(
       inputLength, outputLength,
-      make_shared<WeightTensor>(weightData, weightShape));
+      make_shared<WeightTensor>(weightData, weightShape)));
 
-  auto uploadTensor = fcOp->CreateNewUploadTensor();
-  uploadTensor->ReadFromData({-1, 2, -3, 4});
+  Session session(operators);
 
-  auto readbackTensor = fcOp->CreateNewReadbackTensor();
+  TensorRawData input({1.f, 2.f, 3.f, 4.f});
+  TensorRawData output({0.f, 0.f, 0.f});
 
-  fcOp->Run(uploadTensor, readbackTensor);
-
-  auto output = TensorRawData({0, 0, 0});
-
-  readbackTensor->WriteToData(output);
+  session.Run(input, output);
 
   for (const auto element : output) {
-    cout << element << " ";  
+    cout << element << " ";
   }
   cout << endl;
-
   return 0;
 }

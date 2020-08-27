@@ -13,11 +13,9 @@
 
 namespace d3d12_helper {
 
-void InitializeDirect3D12(
-    winrt::com_ptr<ID3D12Device> &d3D12Device,
-    winrt::com_ptr<ID3D12CommandQueue> &commandQueue,
-    winrt::com_ptr<ID3D12CommandAllocator> &commandAllocator,
-    winrt::com_ptr<ID3D12GraphicsCommandList> &commandList) {
+winrt::com_ptr<ID3D12Device> CreateDevice() {
+  winrt::com_ptr<ID3D12Device> d3D12Device;
+
 #if defined(_DEBUG)
   winrt::com_ptr<ID3D12Debug> d3D12Debug;
   if (FAILED(D3D12GetDebugInterface(__uuidof(d3D12Debug),
@@ -58,20 +56,44 @@ void InitializeDirect3D12(
     winrt::check_hresult(hr);
   } while (hr != S_OK);
 
+  return d3D12Device;
+}
+
+winrt::com_ptr<ID3D12CommandQueue>
+CreateCommandQueue(winrt::com_ptr<ID3D12Device> device) {
+  winrt::com_ptr<ID3D12CommandQueue> commandQueue;
+
   D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
   commandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
   commandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 
-  winrt::check_hresult(d3D12Device->CreateCommandQueue(
+  winrt::check_hresult(device->CreateCommandQueue(
       &commandQueueDesc, __uuidof(commandQueue), commandQueue.put_void()));
 
-  winrt::check_hresult(d3D12Device->CreateCommandAllocator(
+  return commandQueue;
+}
+
+winrt::com_ptr<ID3D12CommandAllocator>
+CreateCommandAllocator(winrt::com_ptr<ID3D12Device> device) {
+  winrt::com_ptr<ID3D12CommandAllocator> commandAllocator;
+
+  winrt::check_hresult(device->CreateCommandAllocator(
       D3D12_COMMAND_LIST_TYPE_DIRECT, __uuidof(commandAllocator),
       commandAllocator.put_void()));
 
-  winrt::check_hresult(d3D12Device->CreateCommandList(
+  return commandAllocator;
+}
+
+winrt::com_ptr<ID3D12GraphicsCommandList>
+CreateCommandList(winrt::com_ptr<ID3D12Device> device,
+                  winrt::com_ptr<ID3D12CommandAllocator> commandAllocator) {
+  winrt::com_ptr<ID3D12GraphicsCommandList> commandList;
+
+  winrt::check_hresult(device->CreateCommandList(
       0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.get(), nullptr,
       __uuidof(commandList), commandList.put_void()));
+
+  return commandList;
 }
 
 void CloseExecuteResetWait(

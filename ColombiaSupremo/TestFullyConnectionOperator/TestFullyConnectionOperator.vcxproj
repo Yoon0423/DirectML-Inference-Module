@@ -136,22 +136,26 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\ConvolutionOperator.cpp" />
+    <ClCompile Include="..\Source\Device.cpp" />
     <ClCompile Include="..\Source\DeviceManager.cpp" />
     <ClCompile Include="..\Source\Direct3D12HelperFunction.cpp" />
     <ClCompile Include="..\Source\DirectMLHelperFunction.cpp" />
     <ClCompile Include="..\Source\FullyConnectionOperator.cpp" />
     <ClCompile Include="..\Source\Operator.cpp" />
+    <ClCompile Include="..\Source\Session.cpp" />
     <ClCompile Include="..\Source\Tensor.cpp" />
     <ClCompile Include="TestFullyConnectionOperator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\ConvolutionOperator.hpp" />
     <ClInclude Include="..\Source\d3dx12.h" />
+    <ClInclude Include="..\Source\Device.hpp" />
     <ClInclude Include="..\Source\DeviceManager.hpp" />
     <ClInclude Include="..\Source\Direct3D12HelperFunction.hpp" />
     <ClInclude Include="..\Source\DirectMLHelperFunction.hpp" />
     <ClInclude Include="..\Source\FullyConnectionOperator.hpp" />
     <ClInclude Include="..\Source\Operator.hpp" />
+    <ClInclude Include="..\Source\Session.hpp" />
     <ClInclude Include="..\Source\Tensor.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

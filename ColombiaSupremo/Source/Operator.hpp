@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "Device.hpp"
 #include "Tensor.hpp"
 
 namespace colombia_supremo {
@@ -22,8 +23,8 @@ public:
   std::shared_ptr<InOutTensor> getOutputTensor();
   winrt::com_ptr<IDMLCompiledOperator> getCompiledOperator(); // remove?
   winrt::com_ptr<IDMLBindingTable> getExecBindingTable();     // remove?
-  void Run(std::shared_ptr<UploadTensor> uploadTensor,
-           std::shared_ptr<ReadbackTensor> readbackTensor);
+  void Run(std::shared_ptr<Device> device, std::shared_ptr<Tensor> inputTensor,
+           std::shared_ptr<Tensor> outputTensor);
 
   virtual void InitBindingTables() = 0;
 
