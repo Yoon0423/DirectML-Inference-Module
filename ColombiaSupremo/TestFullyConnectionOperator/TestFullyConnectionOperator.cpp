@@ -1,3 +1,4 @@
+#include <AddOperator.hpp>
 #include <FullyConnectionOperator.hpp>
 #include <Session.hpp>
 #include <iostream>
@@ -18,11 +19,13 @@ int main(int argc, char **argv) {
       }
     }
   }
+  TensorRawData biasData({1.f, 2.f, 3.f});
 
   vector<shared_ptr<Operator>> operators;
   operators.emplace_back(make_shared<FullyConnectionOperator>(
       inputLength, outputLength,
-      make_shared<WeightTensor>(weightData, weightShape)));
+      make_shared<WeightTensor>(weightData, weightShape),
+      make_shared<TensorRawData>(biasData)));
 
   Session session(operators);
 

@@ -10,10 +10,28 @@ namespace colombia_supremo {
 
 FullyConnectionOperator::FullyConnectionOperator(
     const uint32_t inputLength, const uint32_t outputLength,
-    const std::shared_ptr<WeightTensor> weightTensor)
+    const std::shared_ptr<WeightTensor> weightTensor,
+    const std::shared_ptr<TensorRawData> biasData)
     : Operator(std::move(TensorShape({1, 1, 2, inputLength})),
                std::move(TensorShape({1, 1, 2, outputLength}))),
       mWeightTensor(weightTensor) {
+  // create mBiasTensor
+  if (biasData != nullptr) {
+    TensorShape shape({1, 1, 2, outputLength});
+    const size_t size = static_cast<size_t>(2 * outputLength);
+    TensorRawData data;
+    data.reserve(size);
+    for (size_t i = 0; i < size; ++i) {
+      data.emplace_back(0.f);
+    }
+
+    for (size_t i = 0; i < biasData->size(); ++i) {
+      data[i] = biasData->data()[i];
+    }
+
+    mBiasTensor = std::make_shared<WeightTensor>(data, std::move(shape));
+  }
+
   // create aTensorDesc
   DML_BUFFER_TENSOR_DESC inputBufferTensorDesc;
   TensorSizes inputStrides =
@@ -53,6 +71,30 @@ FullyConnectionOperator::FullyConnectionOperator(
   weightTensorDesc.Type = DML_TENSOR_TYPE_BUFFER;
   weightTensorDesc.Desc = &weightBufferTensorDesc;
 
+  // START
+  // create biasTensorDesc
+  DML_BUFFER_TENSOR_DESC biasBufferTensorDesc;
+  TensorSizes biasStrides;
+  DML_TENSOR_DESC biasTensorDesc;
+  if (biasData != nullptr) {
+    biasStrides = dml_helper::CalculateStrides(mBiasTensor->getShapeRef());
+    {
+      // DML_TENSOR_FLAG_OWNED_BY_DML
+      biasBufferTensorDesc.DataType = DML_TENSOR_DATA_TYPE_FLOAT32;
+      biasBufferTensorDesc.Flags = DML_TENSOR_FLAG_OWNED_BY_DML;
+      biasBufferTensorDesc.DimensionCount = mBiasTensor->getShapeRef().size();
+      biasBufferTensorDesc.Sizes = mBiasTensor->getShapeRef().data();
+      biasBufferTensorDesc.Strides = biasStrides.data();
+      biasBufferTensorDesc.GuaranteedBaseOffsetAlignment = 0;
+      biasBufferTensorDesc.TotalTensorSizeInBytes =
+          mBiasTensor->getTensorBufferSize();
+    }
+
+    biasTensorDesc.Type = DML_TENSOR_TYPE_BUFFER;
+    biasTensorDesc.Desc = &biasBufferTensorDesc;
+  }
+  // END
+
   // create outputTensorDesc
   DML_BUFFER_TENSOR_DESC outputBufferTensorDesc;
   TensorSizes outputStrides =
@@ -77,14 +119,14 @@ FullyConnectionOperator::FullyConnectionOperator(
   {
     gemmOperatorDesc.ATensor = &inputTensorDesc;
     gemmOperatorDesc.BTensor = &weightTensorDesc;
-    gemmOperatorDesc.CTensor = nullptr;
+    gemmOperatorDesc.CTensor = &biasTensorDesc; // nullptr;
     gemmOperatorDesc.OutputTensor = &outputTensorDesc;
     gemmOperatorDesc.TransA =
         DML_MATRIX_TRANSFORM_NONE; // DML_MATRIX_TRANSFORM_NONE
     gemmOperatorDesc.TransB =
         DML_MATRIX_TRANSFORM_NONE; // DML_MATRIX_TRANSFORM_TRANSPOSE
     gemmOperatorDesc.Alpha = 1.f;
-    gemmOperatorDesc.Beta = 0.f;
+    gemmOperatorDesc.Beta = 1.f;
     gemmOperatorDesc.FusedActivation = nullptr;
   }
 
@@ -170,7 +212,7 @@ void FullyConnectionOperator::InitBindingTables() {
 
     ID3D12DescriptorHeap *descriptorHeaps[] = {mInitDescriptorHeap.get()};
     deafultDevice->mCommandList->SetDescriptorHeaps(ARRAYSIZE(descriptorHeaps),
-                                                   descriptorHeaps);
+                                                    descriptorHeaps);
 
     DML_BINDING_TABLE_DESC tableDesc = {
         operatorInitializer.get(),
@@ -195,7 +237,8 @@ void FullyConnectionOperator::InitBindingTables() {
       emptyBufferBinding,
       {mWeightTensor->getBufferPtr(), 0,
        mWeightTensor->getBufferPtr()->GetDesc().Width},
-      emptyBufferBinding};
+      {mBiasTensor->getBufferPtr(), 0,
+       mBiasTensor->getBufferPtr()->GetDesc().Width}};
 
   DML_BUFFER_ARRAY_BINDING initBufferArrayBindings = {3, initBufferBindings};
   DML_BINDING_DESC initBindings = {DML_BINDING_TYPE_BUFFER_ARRAY,
@@ -227,7 +270,7 @@ void FullyConnectionOperator::InitBindingTables() {
 
     ID3D12DescriptorHeap *descriptorHeaps[] = {mExecDescriptorHeap.get()};
     deafultDevice->mCommandList->SetDescriptorHeaps(ARRAYSIZE(descriptorHeaps),
-                                                   descriptorHeaps);
+                                                    descriptorHeaps);
 
     DML_BINDING_TABLE_DESC tableDesc = {
         mCompiledOperator.get(),

@@ -12,7 +12,8 @@ public:
   FullyConnectionOperator() = delete;
   FullyConnectionOperator(const uint32_t inputLength,
                           const uint32_t outputLength,
-                          const std::shared_ptr<WeightTensor> weightTensor);
+                          const std::shared_ptr<WeightTensor> weightTensor,
+                          const std::shared_ptr<TensorRawData> biasData);
   ~FullyConnectionOperator() = default;
 
   std::shared_ptr<WeightTensor> getWeightTensor();
@@ -21,6 +22,7 @@ public:
 
 private:
   std::shared_ptr<WeightTensor> mWeightTensor;
+  std::shared_ptr<WeightTensor> mBiasTensor;
 };
 
 } // namespace colombia_supremo
