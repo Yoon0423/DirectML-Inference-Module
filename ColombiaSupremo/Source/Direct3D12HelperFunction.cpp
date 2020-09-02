@@ -48,8 +48,7 @@ winrt::com_ptr<ID3D12Device> CreateDevice() {
 #if defined(_DEBUG)
     std::wcout << L"chosen GPU: " << pDesc.Description << L"\n";
 #endif
-
-    hr = ::D3D12CreateDevice(dxgiAdapter.get(), D3D_FEATURE_LEVEL_11_0,
+    hr = ::D3D12CreateDevice(dxgiAdapter.get(), D3D_FEATURE_LEVEL_12_1,
                              __uuidof(d3D12Device), d3D12Device.put_void());
     if (hr == DXGI_ERROR_UNSUPPORTED)
       continue;
