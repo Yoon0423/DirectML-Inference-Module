@@ -1,4 +1,3 @@
-#include <AddOperator.hpp>
 #include <FullyConnectionOperator.hpp>
 #include <Session.hpp>
 #include <iostream>
