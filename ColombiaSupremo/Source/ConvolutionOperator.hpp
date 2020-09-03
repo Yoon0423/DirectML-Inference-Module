@@ -4,7 +4,6 @@
 #pragma once
 
 #include "Operator.hpp"
-#include "eActivation.hpp"
 
 namespace colombia_supremo {
 
@@ -23,7 +22,6 @@ public:
   void InitBindingTables() override;
 
 private:
-
   std::shared_ptr<WeightTensor> mWeightTensor;
   std::shared_ptr<WeightTensor> mBiasTensor;
 
