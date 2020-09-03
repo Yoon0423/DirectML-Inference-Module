@@ -135,7 +135,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Source\AddOperator.cpp" />
     <ClCompile Include="..\Source\ConvolutionOperator.cpp" />
     <ClCompile Include="..\Source\Device.cpp" />
     <ClCompile Include="..\Source\DeviceManager.cpp" />
@@ -148,7 +147,6 @@
     <ClCompile Include="TestFullyConnectionOperator.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Source\AddOperator.hpp" />
     <ClInclude Include="..\Source\ConvolutionOperator.hpp" />
     <ClInclude Include="..\Source\d3dx12.h" />
     <ClInclude Include="..\Source\Device.hpp" />
