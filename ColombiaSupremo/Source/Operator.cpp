@@ -30,8 +30,6 @@ winrt::com_ptr<IDMLBindingTable> Operator::getExecBindingTable() {
 void Operator::Run(std::shared_ptr<Device> device,
                    std::shared_ptr<Tensor> inputTensor,
                    std::shared_ptr<Tensor> outputTensor) {
-  auto &deviceManager = DeviceManager::getInstance();
-
   device->mCommandList->ResourceBarrier(
       1, &CD3DX12_RESOURCE_BARRIER::Transition(
              inputTensor->getBufferPtr(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
