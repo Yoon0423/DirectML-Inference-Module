@@ -12,7 +12,7 @@ ConvolutionOperator::ConvolutionOperator(
     TensorShape inputShape, TensorShape outputShape,
     const std::shared_ptr<WeightTensor> weightTensor,
     const std::shared_ptr<WeightTensor> biasTensor, const uint32_t stride,
-    const uint32_t padding)
+    const uint32_t padding, const bool isReluActivated)
     : Operator(inputShape, outputShape), mWeightTensor(weightTensor),
       mBiasTensor(biasTensor), mStride(stride), mPadding(padding) {
   // create inputTensorDesc
@@ -72,7 +72,7 @@ ConvolutionOperator::ConvolutionOperator(
   filterTensorDesc.Type = DML_TENSOR_TYPE_BUFFER;
   filterTensorDesc.Desc = &filterBufferTensorDesc;
 
-  // create BiasTensorDesc
+  // create biasTensorDesc
   DML_BUFFER_TENSOR_DESC biasBufferTensorDesc;
   TensorSizes biasStrides;
   DML_TENSOR_DESC biasTensorDesc{};
@@ -93,6 +93,17 @@ ConvolutionOperator::ConvolutionOperator(
     biasTensorDesc.Desc = &biasBufferTensorDesc;
   }
 
+  // create activation operator desc
+  DML_ACTIVATION_RELU_OPERATOR_DESC reluDesc;
+  {
+    reluDesc.InputTensor = nullptr;
+    reluDesc.OutputTensor = nullptr;
+  }
+
+  DML_OPERATOR_DESC activationDesc{};
+  activationDesc.Type = DML_OPERATOR_ACTIVATION_RELU;
+  activationDesc.Desc = &reluDesc;
+
   // create convolution operator descriptor
   DML_CONVOLUTION_OPERATOR_DESC convolutionOperatorDesc;
   uint32_t strides[] = {mStride, mStride};
@@ -110,7 +121,8 @@ ConvolutionOperator::ConvolutionOperator(
     convolutionOperatorDesc.Mode = DML_CONVOLUTION_MODE_CROSS_CORRELATION;
     convolutionOperatorDesc.Direction = DML_CONVOLUTION_DIRECTION_FORWARD;
     convolutionOperatorDesc.DimensionCount = 2;
-    convolutionOperatorDesc.FusedActivation = nullptr;
+    convolutionOperatorDesc.FusedActivation =
+        isReluActivated == true ? &activationDesc : nullptr;
     convolutionOperatorDesc.Strides = strides;
     convolutionOperatorDesc.Dilations = dilations;
     convolutionOperatorDesc.StartPadding = StartPaddings;
@@ -142,7 +154,7 @@ std::shared_ptr<WeightTensor> ConvolutionOperator::getWeightTensor() {
 
 void ConvolutionOperator::InitBindingTables() {
   auto defaultDevice = DeviceManager::getInstance().GetDefault();
-  
+
   winrt::com_ptr<IDMLOperatorInitializer> operatorInitializer;
   IDMLCompiledOperator *dmlCompiledOperators[] = {mCompiledOperator.get()};
   winrt::check_hresult(defaultDevice->mDMLDevice->CreateOperatorInitializer(
@@ -201,7 +213,7 @@ void ConvolutionOperator::InitBindingTables() {
 
     ID3D12DescriptorHeap *descriptorHeaps[] = {mInitDescriptorHeap.get()};
     defaultDevice->mCommandList->SetDescriptorHeaps(ARRAYSIZE(descriptorHeaps),
-                                                   descriptorHeaps);
+                                                    descriptorHeaps);
 
     DML_BINDING_TABLE_DESC tableDesc = {
         operatorInitializer.get(),
@@ -258,7 +270,7 @@ void ConvolutionOperator::InitBindingTables() {
 
     ID3D12DescriptorHeap *descriptorHeaps[] = {mExecDescriptorHeap.get()};
     defaultDevice->mCommandList->SetDescriptorHeaps(ARRAYSIZE(descriptorHeaps),
-                                                   descriptorHeaps);
+                                                    descriptorHeaps);
 
     DML_BINDING_TABLE_DESC tableDesc = {
         mCompiledOperator.get(),

@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Operator.hpp"
+#include "eActivation.hpp"
 
 namespace colombia_supremo {
 
@@ -13,7 +14,8 @@ public:
   ConvolutionOperator(TensorShape inputShape, TensorShape outputShape,
                       const std::shared_ptr<WeightTensor> weightTensor,
                       const std::shared_ptr<WeightTensor> biasTensor,
-                      const uint32_t stride, const uint32_t padding);
+                      const uint32_t stride, const uint32_t padding,
+                      const bool isReluActivated);
   ~ConvolutionOperator() = default;
 
   std::shared_ptr<WeightTensor> getWeightTensor();
@@ -21,6 +23,7 @@ public:
   void InitBindingTables() override;
 
 private:
+
   std::shared_ptr<WeightTensor> mWeightTensor;
   std::shared_ptr<WeightTensor> mBiasTensor;
 

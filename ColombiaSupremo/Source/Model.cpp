@@ -35,6 +35,10 @@ Model::Model(const char *const filePath) : mFilePath(std::string(filePath)) {
 
       std::string activation;
       std::getline(file, activation);
+      bool isReluActivation = false;
+      if (activation == "Relu") {
+        isReluActivation = true;
+      }
 
       const auto kernelShape = ReadKernelShapeFrom(file);
       const auto strides = ReadStridesFrom(file);
@@ -44,7 +48,7 @@ Model::Model(const char *const filePath) : mFilePath(std::string(filePath)) {
           inputShape, outputShape,
           std::make_shared<WeightTensor>(weightData, weightShape),
           std::make_shared<WeightTensor>(biasData, biasShape), strides[0],
-          paddings[0]));
+          paddings[0], isReluActivation));
     } else if (str == "MaxPool") {
       const TensorShape inputShape = ReadTensorShapeFrom(file);
       const TensorShape outputShape = ReadTensorShapeFrom(file);
