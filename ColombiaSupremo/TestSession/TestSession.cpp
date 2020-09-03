@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
 
     operators.emplace_back(make_shared<FullyConnectionOperator>(
         inputLength, hiddenLength_1,
-        make_shared<WeightTensor>(weightData, weightShape)));
+        make_shared<WeightTensor>(weightData, weightShape), nullptr));
   }
 
   {
@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
 
     operators.emplace_back(make_shared<FullyConnectionOperator>(
         hiddenLength_1, hiddenLength_2,
-        make_shared<WeightTensor>(weightData, weightShape)));
+        make_shared<WeightTensor>(weightData, weightShape), nullptr));
   }
 
   {
@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
 
     operators.emplace_back(make_shared<FullyConnectionOperator>(
         hiddenLength_2, outputLength,
-        make_shared<WeightTensor>(weightData, weightShape)));
+        make_shared<WeightTensor>(weightData, weightShape), nullptr));
   }
 
   {
