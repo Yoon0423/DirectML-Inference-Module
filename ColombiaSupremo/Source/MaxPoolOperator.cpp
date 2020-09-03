@@ -5,7 +5,6 @@
 #include "DeviceManager.hpp"
 #include "Direct3D12HelperFunction.hpp"
 #include "DirectMLHelperFunction.hpp"
-#include <iostream> // TODO: REMOVE
 
 namespace colombia_supremo {
 
@@ -149,8 +148,6 @@ void MaxPoolOperator::InitBindingTables() {
     winrt::check_hresult(mExecBindingTable->Reset(&tableDesc));
   }
 
-  // defaultDevice->CloseExecuteResetWait();
-
   DML_BUFFER_BINDING outputBufferBinding{mOutputTensor->getBufferPtr(), 0,
                                          mOutputTensor->getTensorBufferSize()};
   DML_BINDING_DESC outputBinding{DML_BINDING_TYPE_BUFFER, &outputBufferBinding};
@@ -168,8 +165,6 @@ void MaxPoolOperator::InitBindingTables() {
       mExecBindingTable.get());
 
   defaultDevice->CloseExecuteResetWait();
-
-  int a; // TODO: remove
 }
 
 } // namespace colombia_supremo
