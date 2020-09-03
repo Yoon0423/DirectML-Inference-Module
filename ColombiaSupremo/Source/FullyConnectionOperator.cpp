@@ -14,9 +14,10 @@ FullyConnectionOperator::FullyConnectionOperator(
     const std::shared_ptr<TensorRawData> biasData)
     : Operator(std::move(TensorShape({1, 1, 2, inputLength})),
                std::move(TensorShape({1, 1, 2, outputLength}))),
-      mWeightTensor(weightTensor) {
+      mWeightTensor(weightTensor),
+      mHasBias(biasData == nullptr ? false : true) {
   // create mBiasTensor
-  if (biasData != nullptr) {
+  if (mHasBias == true) {
     TensorShape shape({1, 1, 2, outputLength});
     const size_t size = static_cast<size_t>(2 * outputLength);
     TensorRawData data;
@@ -76,7 +77,7 @@ FullyConnectionOperator::FullyConnectionOperator(
   DML_BUFFER_TENSOR_DESC biasBufferTensorDesc;
   TensorSizes biasStrides;
   DML_TENSOR_DESC biasTensorDesc;
-  if (biasData != nullptr) {
+  if (mHasBias == true) {
     biasStrides = dml_helper::CalculateStrides(mBiasTensor->getShapeRef());
     {
       // DML_TENSOR_FLAG_OWNED_BY_DML
@@ -119,7 +120,7 @@ FullyConnectionOperator::FullyConnectionOperator(
   {
     gemmOperatorDesc.ATensor = &inputTensorDesc;
     gemmOperatorDesc.BTensor = &weightTensorDesc;
-    gemmOperatorDesc.CTensor = &biasTensorDesc; // nullptr;
+    gemmOperatorDesc.CTensor = mHasBias == true ? &biasTensorDesc : nullptr;
     gemmOperatorDesc.OutputTensor = &outputTensorDesc;
     gemmOperatorDesc.TransA =
         DML_MATRIX_TRANSFORM_NONE; // DML_MATRIX_TRANSFORM_NONE
@@ -232,13 +233,16 @@ void FullyConnectionOperator::InitBindingTables() {
   // TODO: should be global constant
   const DML_BUFFER_BINDING emptyBufferBinding = {nullptr, 0, 0};
   const DML_BINDING_DESC emptyBindingDesc = {DML_BINDING_TYPE_NONE, nullptr};
-
+  DML_BUFFER_BINDING biasBufferBinding =
+      mHasBias == true
+          ? DML_BUFFER_BINDING{mBiasTensor->getBufferPtr(), 0,
+                               mBiasTensor->getBufferPtr()->GetDesc().Width}
+          : emptyBufferBinding;
   DML_BUFFER_BINDING initBufferBindings[4] = {
       emptyBufferBinding,
       {mWeightTensor->getBufferPtr(), 0,
        mWeightTensor->getBufferPtr()->GetDesc().Width},
-      {mBiasTensor->getBufferPtr(), 0,
-       mBiasTensor->getBufferPtr()->GetDesc().Width}};
+      biasBufferBinding};
 
   DML_BUFFER_ARRAY_BINDING initBufferArrayBindings = {3, initBufferBindings};
   DML_BINDING_DESC initBindings = {DML_BINDING_TYPE_BUFFER_ARRAY,

@@ -23,6 +23,7 @@ public:
 private:
   std::shared_ptr<WeightTensor> mWeightTensor;
   std::shared_ptr<WeightTensor> mBiasTensor;
+  const bool mHasBias;
 };
 
 } // namespace colombia_supremo
