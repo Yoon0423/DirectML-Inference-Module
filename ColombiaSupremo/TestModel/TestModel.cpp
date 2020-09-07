@@ -14,10 +14,10 @@ int main(int argc, char **argv) {
   cout << "TestModel" << endl;
 
   cout << "load mnist test images and labels..." << endl;
-  MnistImageLoader imageLoader("t10k-images.idx3-ubyte");
-  MnistLabelLoader labelLoader("t10k-labels.idx1-ubyte");
+  MnistImageLoader imageLoader("../Model/t10k-images.idx3-ubyte");
+  MnistLabelLoader labelLoader("../Model/t10k-labels.idx1-ubyte");
 
-  Model model("converted_mnist.txt");
+  Model model("../Model/converted_mnist.txt");
   Session session(model.GetOperators());
 
   const size_t outputSize = 10;

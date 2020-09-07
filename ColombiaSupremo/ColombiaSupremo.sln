@@ -17,6 +17,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestReshapeOperator", "Test
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestModel", "TestModel\TestModel.vcxproj", "{7B276279-70EC-401D-BF8F-34AD47D3667B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestInferenceEngine", "TestInferenceEngine\TestInferenceEngine.vcxproj", "{1A279055-D655-47C1-AFC1-B54DEE9F835F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -93,6 +95,16 @@ Global
 		{7B276279-70EC-401D-BF8F-34AD47D3667B}.Release|x64.Build.0 = Release|x64
 		{7B276279-70EC-401D-BF8F-34AD47D3667B}.Release|x86.ActiveCfg = Release|Win32
 		{7B276279-70EC-401D-BF8F-34AD47D3667B}.Release|x86.Build.0 = Release|Win32
+		{1A279055-D655-47C1-AFC1-B54DEE9F835F}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{1A279055-D655-47C1-AFC1-B54DEE9F835F}.Debug|x64.ActiveCfg = Debug|x64
+		{1A279055-D655-47C1-AFC1-B54DEE9F835F}.Debug|x64.Build.0 = Debug|x64
+		{1A279055-D655-47C1-AFC1-B54DEE9F835F}.Debug|x86.ActiveCfg = Debug|Win32
+		{1A279055-D655-47C1-AFC1-B54DEE9F835F}.Debug|x86.Build.0 = Debug|Win32
+		{1A279055-D655-47C1-AFC1-B54DEE9F835F}.Release|Any CPU.ActiveCfg = Release|Win32
+		{1A279055-D655-47C1-AFC1-B54DEE9F835F}.Release|x64.ActiveCfg = Release|x64
+		{1A279055-D655-47C1-AFC1-B54DEE9F835F}.Release|x64.Build.0 = Release|x64
+		{1A279055-D655-47C1-AFC1-B54DEE9F835F}.Release|x86.ActiveCfg = Release|Win32
+		{1A279055-D655-47C1-AFC1-B54DEE9F835F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

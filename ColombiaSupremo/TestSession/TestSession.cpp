@@ -114,8 +114,6 @@ int main(int argc, char **argv) {
   }
 
   {
-    const auto t0 = chrono::high_resolution_clock::now();
-
     vector<Session> sessions;
     sessions.reserve(3);
     sessions.emplace_back(operators);
@@ -127,6 +125,8 @@ int main(int argc, char **argv) {
       session.Run(input, output);
       promise.set_value(true);
     };
+
+    const auto t0 = chrono::high_resolution_clock::now();
 
     vector<future<bool>> futures;
     vector<promise<bool>> promises;
