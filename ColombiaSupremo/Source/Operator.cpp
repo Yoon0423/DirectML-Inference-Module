@@ -83,7 +83,7 @@ void Operator::Run(std::shared_ptr<Device> device,
              mOutputTensor->getBufferPtr(), D3D12_RESOURCE_STATE_COPY_SOURCE,
              D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
 
-  device->CloseExecuteResetWait();
+  //device->CloseExecuteResetWait();
 }
 
 std::shared_ptr<UploadTensor> Operator::CreateNewUploadTensor() {

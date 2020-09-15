@@ -4,18 +4,20 @@
 #include <InferenceEngine.hpp>
 #include <MnistImageLoader.hpp>
 #include <MnistLabelLoader.hpp>
+#include <chrono>
 #include <iostream>
 #include <vector>
 
 using namespace std;
+using namespace chrono;
 using namespace colombia_supremo;
 
 void setZeroTensorData(vector<TensorRawData> &tensors);
 
 int main(int argc, char **argv) {
-  cout << "TestInferenceEngine" << endl;
+  cout << "TestOnnxruntime" << endl;
 
-  const size_t batchSize = 3;
+  const size_t batchSize = 5;
 
   InferenceEngine engine("../Model/converted_mnist.txt", batchSize);
 
@@ -45,27 +47,40 @@ int main(int argc, char **argv) {
   MnistImageLoader imageLoader("../Model/t10k-images.idx3-ubyte");
   MnistLabelLoader labelLoader("../Model/t10k-labels.idx1-ubyte");
 
-  for (size_t i = 0; i < 3; ++i) {
-    inputs[i] = imageLoader.LoadData(i);
-    answers[i] = labelLoader.LoadData(i);
-  }
+  double elapsedNanoseconds = 0.;
 
-  engine.Run(inputs, outputs);
-
-  for (size_t i = 0; i < batchSize; ++i) {
-    const auto& output = outputs[i];
-
-    size_t result = 0;
-    float value = output[0];
-    for (size_t j = 0; j < 10; ++j) {
-      if (output[j] > value) {
-        result = j;
-        value = output[j];
-      }
+  for (size_t i = 0; i < 100; i += batchSize) {
+    for (size_t j = 0; j < batchSize; ++j) {
+      inputs[j] = imageLoader.LoadData(i + j);
+      answers[j] = labelLoader.LoadData(i + j);
     }
 
-    cout << "inferenced output: " << result << " | answer: " << static_cast<int>(answers[i]) << endl;
+    const auto t_start = high_resolution_clock::now();
+    engine.Run(inputs, outputs);
+    const auto t_end = high_resolution_clock::now();
+
+    elapsedNanoseconds += static_cast<double>(
+        duration_cast<nanoseconds>(t_end - t_start).count());
+
+    for (size_t j = 0; j < batchSize; ++j) {
+      const auto &output = outputs[j];
+
+      size_t result = 0;
+      float value = output[0];
+      for (size_t k = 0; k < 10; ++k) {
+        if (output[k] > value) {
+          result = k;
+          value = output[k];
+        }
+      }
+
+      //cout << "inferenced output: " << result
+      //     << " | answer: " << static_cast<int>(answers[j]) << endl;
+    }
   }
+
+  cout << "elapsed time: "
+       << static_cast<long long>(elapsedNanoseconds / 1000000.0) << endl;
 
   return 0;
 }

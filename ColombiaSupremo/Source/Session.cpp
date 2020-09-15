@@ -52,7 +52,7 @@ void Session::Run(const TensorRawData &input, TensorRawData &output) {
              D3D12_RESOURCE_STATE_COPY_DEST,
              D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
 
-  mDevice->CloseExecuteResetWait();
+  //mDevice->CloseExecuteResetWait();
 
   for (size_t i = 0; i < operatorCount; ++i) {
     mOperators[i]->Run(mDevice, mIntermediateTensors[i], mIntermediateTensors[i + 1]);
