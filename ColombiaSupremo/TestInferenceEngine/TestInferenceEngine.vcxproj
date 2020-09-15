@@ -146,9 +146,11 @@
     <ClCompile Include="..\Source\MnistImageLoader.cpp" />
     <ClCompile Include="..\Source\MnistLabelLoader.cpp" />
     <ClCompile Include="..\Source\Model.cpp" />
+    <ClCompile Include="..\Source\MultiSessionEngine.cpp" />
     <ClCompile Include="..\Source\Operator.cpp" />
     <ClCompile Include="..\Source\ReshapeOperator.cpp" />
     <ClCompile Include="..\Source\Session.cpp" />
+    <ClCompile Include="..\Source\SingleSessionEngine.cpp" />
     <ClCompile Include="..\Source\Tensor.cpp" />
     <ClCompile Include="TestInferenceEngine.cpp" />
   </ItemGroup>
@@ -166,9 +168,11 @@
     <ClInclude Include="..\Source\MnistImageLoader.hpp" />
     <ClInclude Include="..\Source\MnistLabelLoader.hpp" />
     <ClInclude Include="..\Source\Model.hpp" />
+    <ClInclude Include="..\Source\MultiSessionEngine.hpp" />
     <ClInclude Include="..\Source\Operator.hpp" />
     <ClInclude Include="..\Source\ReshapeOperator.hpp" />
     <ClInclude Include="..\Source\Session.hpp" />
+    <ClInclude Include="..\Source\SingleSessionEngine.hpp" />
     <ClInclude Include="..\Source\Tensor.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

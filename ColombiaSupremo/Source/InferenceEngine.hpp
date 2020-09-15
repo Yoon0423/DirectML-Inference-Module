@@ -16,10 +16,10 @@ public:
   InferenceEngine(const char *const modelFilePath, const size_t batchSize);
   ~InferenceEngine() = default;
 
-  void Run(const std::vector<TensorRawData> &inputs,
-           std::vector<TensorRawData> &outputs);
+  virtual void Run(const std::vector<TensorRawData> &inputs,
+                   std::vector<TensorRawData> &outputs) = 0;
 
-private:
+protected:
   const size_t mBatchSize;
   Model mModel;
   std::vector<Session> mSessions;
